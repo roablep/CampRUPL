@@ -2,7 +2,7 @@ a.join-us-link {
   display: inline;
 }
 
-.join-us-cta a {
+.join-us-cta a, a.join-us-cta {
   position: relative;
   text-decoration: none;
   color: #f48937;
