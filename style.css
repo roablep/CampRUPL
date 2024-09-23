@@ -2,7 +2,7 @@ a.join-us-link {
   display: inline;
 }
 
-.join-us-cta a, a.join-us-cta {
+.join-us-cta a, a.join-us-cta-header {
   position: relative;
   text-decoration: none;
   color: #f48937;
@@ -3739,7 +3739,7 @@ html {
     border-bottom: 1px #000;
   }
   
-  @media screen and (max-width: 991px) {
+  @media screen and (max-width: 991px) {    
     h1, h2, h3, h4, h5, h6, li, blockquote {
       text-align: left;
     }
@@ -4155,6 +4155,14 @@ html {
   }
   
   @media screen and (max-width: 479px) {
+    a.join-us-cta-header {
+      position: relative;
+      text-decoration: none;
+      color: #f5e4d6;
+      font-weight: bold;
+      transition: color 0.3s ease-in-out;
+    }
+
     body {
       background-color: #f8f8f8;
       background-image: url("https://cdn.prod.website-files.com/5e2520252e290c852ed89624/5e7ab4842c9596d555f88d6e_Gradien.png"), linear-gradient(#f8f8f8, #f8f8f8);

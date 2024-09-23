@@ -63,39 +63,8 @@
   </style>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-  <script>
-    function setup() {
-      let canvas = createCanvas(300, 300); // Set canvas size
-      canvas.parent('p5-canvas-container'); // Attach canvas to the container
-      noFill(); // No fill for shapes
-      frameRate(30); // Set frame rate
-    }
+  <script src="scripts/animations.js"></script>
 
-    function draw() {
-      background(20, 30, 50); // Dark background color
-
-      // Create abstract, flowing shapes
-      stroke(255, 100, 150, 150); // Set stroke color and transparency
-      strokeWeight(2);
-
-      // Create a looping dynamic shape
-      for (let i = 0; i < 20; i++) {
-        let t = frameCount * 0.01 + i;
-        let x = width / 2 + sin(t) * 100;
-        let y = height / 2 + cos(t) * 100;
-        ellipse(x, y, 100, 100); // Draw ellipses that move and overlap
-      }
-
-      // Add some rotating lines
-      stroke(100, 150, 255, 150);
-      translate(width / 2, height / 2);
-      rotate(frameCount * 0.01);
-      for (let i = 0; i < 8; i++) {
-        line(0, 0, 150, 0);
-        rotate(PI / 4);
-      }
-    }
-  </script>
 
 </head>
 
@@ -215,7 +184,7 @@
       <a href="#our-vibe" class="header-link">Experience</a>
       <a href="#our-sound" class="header-link">Sound</a>
       <a href="#our-values" class="header-link">Values</a>
-      <a href="#get-involved" class="header-link join-us-cta">Join Us</a>
+      <a href="#get-involved" class="header-link join-us-cta-header">Join Us</a>
     </div>
 
     <div class="nav-logo-container"><a href="/" data-w-id="e802211d-bf88-532a-0c40-4cac22a96aef"
@@ -271,7 +240,7 @@
                   </div>
                 </div>
               </a>
-              <div id="p5-canvas-container" class="hero-image"></div>
+              <div id="p5-canvas-container-1" class="hero-image"></div>
             </div>
             <div class="short-divider"></div>
           </div>
@@ -307,7 +276,7 @@
                   </div>
                 </div>
               </a>
-              <div id="p5-canvas-container" class="hero-image"></div>
+              <div id="p5-canvas-container-2" class="hero-image"></div>
             </div>
             <div class="short-divider"></div>
           </div>
@@ -342,7 +311,7 @@
                   </div>
                 </div>
               </a>
-              <div id="p5-canvas-container" class="hero-image"></div>
+              <div id="p5-canvas-container-3" class="hero-image"></div>
             </div>
             <div class="short-divider"></div>
           </div>
@@ -377,7 +346,7 @@
                   </div>
                 </div>
               </a>
-              <div id="p5-canvas-container" class="hero-image"></div>
+              <div id="p5-canvas-container-4" class="hero-image"></div>
             </div>
             <div class="short-divider"></div>
           </div>
@@ -415,7 +384,7 @@
                   </div>
                 </div>
    
-              <div id="p5-canvas-container" class="hero-image"></div>
+              <div id="p5-canvas-container-5" class="hero-image"></div>
             </div>
             <div class="short-divider"></div>
           </div>
