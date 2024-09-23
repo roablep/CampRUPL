@@ -109,60 +109,110 @@ var sketch1 = function (p) {
 
 new p5(sketch1);
 
-// Animation 2: Flowing Gradient Background
+// Animation 2: Gentle Flowing Particles
 
-var sketch2 = function (p) {
-    let colors = [];
-    let colorIndex = 0;
-    let gradientSpeed = 0.005;
-  
-    p.setup = function () {
-      let canvas = p.createCanvas(300, 300);
-      canvas.parent("p5-canvas-container-2");
-      p.noStroke();
-  
-      // Define gradient colors
-      colors = [
-        p.color(255, 102, 102),   // Red
-        p.color(102, 255, 178),   // Green
-        p.color(102, 178, 255),   // Blue
-        p.color(255, 102, 255),   // Purple
-      ];
-    };
-  
-    p.draw = function () {
-      // Calculate indices
-      let i1 = Math.floor(colorIndex) % colors.length;
-      let i2 = (i1 + 1) % colors.length;
-      let i3 = (i1 + 2) % colors.length;
-  
-      // Fractional part between 0 and 1
-      let t = colorIndex % 1;
-  
-      for (let y = 0; y < p.height; y++) {
-        let interY = y / p.height;
-  
-        // Gradient from colors[i1] to colors[i2]
-        let gradient1 = p.lerpColor(colors[i1], colors[i2], interY);
-        // Gradient from colors[i2] to colors[i3]
-        let gradient2 = p.lerpColor(colors[i2], colors[i3], interY);
-  
-        // Interpolate between the two gradients over time
-        let c = p.lerpColor(gradient1, gradient2, t);
-  
-        p.stroke(c);
-        p.line(0, y, p.width, y);
-      }
-  
-      // Update colorIndex
-      colorIndex += gradientSpeed;
-      if (colorIndex >= colors.length) {
-        colorIndex -= colors.length;
-      }
-    };
+var sketch2 = function(p) {
+  let particles = [];
+  const numParticles = 50;
+  let flowField;
+  let cols, rows;
+  let scale = 10;
+  let zOffset = 0;
+
+  p.setup = function() {
+    let canvas = p.createCanvas(300, 300);
+    canvas.parent('p5-canvas-container-2');
+    p.colorMode(p.HSB, 360, 100, 100, 100);
+    p.background(220, 50, 20); // Soft background color
+    p.noStroke();
+
+    // Calculate columns and rows for the flow field
+    cols = p.floor(p.width / scale);
+    rows = p.floor(p.height / scale);
+    flowField = new Array(cols * rows);
+
+    // Create particles
+    for (let i = 0; i < numParticles; i++) {
+      particles.push(new Particle());
+    }
   };
-  
-  new p5(sketch2);
+
+  p.draw = function() {
+    // Generate flow field using Perlin noise
+    let yOffset = 0;
+    for (let y = 0; y < rows; y++) {
+      let xOffset = 0;
+      for (let x = 0; x < cols; x++) {
+        let angle = p.noise(xOffset, yOffset, zOffset) * p.TWO_PI * 2;
+        let vector = p5.Vector.fromAngle(angle);
+        vector.setMag(0.5);
+        flowField[x + y * cols] = vector;
+        xOffset += 0.05;
+      }
+      yOffset += 0.05;
+    }
+    zOffset += 0.001;
+
+    // Update and display particles
+    for (let particle of particles) {
+      particle.follow(flowField);
+      particle.update();
+      particle.edges();
+      particle.display();
+    }
+  };
+
+  class Particle {
+    constructor() {
+      this.pos = p.createVector(p.random(p.width), p.random(p.height));
+      this.vel = p.createVector(0, 0);
+      this.acc = p.createVector(0, 0);
+      this.maxSpeed = 1.5;
+      this.hue = p.random(200, 260); // Soft hues
+      this.size = 2;
+      this.prevPos = this.pos.copy();
+    }
+
+    follow(vectors) {
+      let x = p.floor(this.pos.x / scale);
+      let y = p.floor(this.pos.y / scale);
+      let index = x + y * cols;
+      let force = vectors[index];
+      if (force) {
+        this.applyForce(force);
+      }
+    }
+
+    applyForce(force) {
+      this.acc.add(force);
+    }
+
+    update() {
+      this.vel.add(this.acc);
+      this.vel.limit(this.maxSpeed);
+      this.pos.add(this.vel);
+      this.acc.mult(0);
+    }
+
+    edges() {
+      if (this.pos.x > p.width) this.pos.x = 0;
+      if (this.pos.x < 0) this.pos.x = p.width;
+      if (this.pos.y > p.height) this.pos.y = 0;
+      if (this.pos.y < 0) this.pos.y = p.height;
+
+      this.prevPos = this.pos.copy();
+    }
+
+    display() {
+      p.stroke(this.hue, 80, 100, 50);
+      p.strokeWeight(this.size);
+      p.line(this.pos.x, this.pos.y, this.prevPos.x, this.prevPos.y);
+      this.prevPos = this.pos.copy();
+    }
+  }
+};
+
+new p5(sketch2);
   
 // Animation 3: Pulsating Waves
 
@@ -269,6 +319,10 @@ var sketch4 = function(p) {
 var sketch5 = function(p) {
     let particles = [];
     const numParticles = 100;
+    let centralOrbSize = 20;
+    let maxOrbSize = 30;
+    let orbPulseSpeed = 0.03;
+    let orbHue = 27; // Warm, inviting color
     let center;
   
     p.setup = function() {
@@ -283,9 +337,33 @@ var sketch5 = function(p) {
         particles.push(new Particle());
       }
     };
+
+    function drawCentralOrb() {
+      // Pulsate the orb size
+      centralOrbSize = 20 + p.sin(p.frameCount * orbPulseSpeed) * 5;
+  
+      // Optional: Make the orb respond to mouse proximity
+      let distanceToMouse = p.dist(p.mouseX, p.mouseY, center.x, center.y);
+      if (distanceToMouse < 100) {
+        centralOrbSize = maxOrbSize;
+      }
+  
+      p.noStroke();
+      p.fill(orbHue, 80, 100, 80);
+      p.ellipse(center.x, center.y, centralOrbSize);
+  
+      // Add a glow effect
+      p.drawingContext.shadowBlur = 20;
+      p.drawingContext.shadowColor = p.color(orbHue, 80, 100);
+      p.ellipse(center.x, center.y, centralOrbSize);
+      p.drawingContext.shadowBlur = 0;
+    }
   
     p.draw = function() {
       p.background(210, 50, 20); // Light background color
+
+    // Draw central glowing orb
+    drawCentralOrb();
   
       for (let particle of particles) {
         particle.update();
