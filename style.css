@@ -2,7 +2,7 @@ a.join-us-link {
   display: inline;
 }
 
-.inline-links a {
+.join-us-cta a {
   position: relative;
   text-decoration: none;
   color: #f48937;
@@ -10,7 +10,7 @@ a.join-us-link {
   transition: color 0.3s ease-in-out;
 }
 
-.inline-links a::after {
+.join-us-cta a::after {
   content: "";
   position: absolute;
   left: 0;
