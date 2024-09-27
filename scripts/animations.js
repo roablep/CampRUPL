@@ -222,7 +222,7 @@ var sketch2 = function(p) {
   let bursts = [];
 
   p.setup = function() {
-    let canvas = p.createCanvas(p.windowWidth < 768 ? p.windowWidth - 20 : 300, 300);
+    let canvas = p.createCanvas(300, 300);
     canvas.parent('p5-canvas-container-2');
     p.colorMode(p.HSB, 360, 100, 100, 100);
     p.background(220, 50, 20); // Soft background color
