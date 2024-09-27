@@ -218,102 +218,135 @@ new p5(sketch2);
 
 var sketch2 = function(p) {
   let particles = [];
-  let numParticles;
-  let flowField;
-  let cols, rows;
-  let scale = 10;
-  let zOffset = 0;
-
-  // Dynamically set particle count based on screen size
-  numParticles = p.windowWidth < 768 ? 25 : 50;  // Lower particle count for mobile
+  const numParticles = p.windowWidth < 768 ? 15 : 50; // Adjust particle count based on screen size
+  let bursts = [];
 
   p.setup = function() {
-    let canvas = p.createCanvas(p.windowWidth < 768 ? 250 : 300, p.windowWidth < 768 ? 250 : 300);
+    let canvas = p.createCanvas(p.windowWidth < 768 ? p.windowWidth - 20 : 300, 300);
     canvas.parent('p5-canvas-container-2');
     p.colorMode(p.HSB, 360, 100, 100, 100);
     p.background(220, 50, 20); // Soft background color
     p.noStroke();
 
-    cols = p.floor(p.width / scale);
-    rows = p.floor(p.height / scale);
-    flowField = new Array(cols * rows);
-
+    // Create gentle floating particles
     for (let i = 0; i < numParticles; i++) {
-      particles.push(new Particle());
+      particles.push(new Particle(p.random(p.width), p.random(p.height)));
     }
+
+    // Schedule bursts randomly every few seconds
+    setInterval(() => {
+      bursts.push(new Burst(p.random(p.width), p.random(p.height)));
+    }, p.random(2500, 5500)); // Burst every few seconds
   };
 
   p.draw = function() {
-    let yOffset = 0;
-    for (let y = 0; y < rows; y++) {
-      let xOffset = 0;
-      for (let x = 0; x < cols; x++) {
-        let angle = p.noise(xOffset, yOffset, zOffset) * p.TWO_PI * 2;
-        let vector = p5.Vector.fromAngle(angle);
-        vector.setMag(0.5);
-        flowField[x + y * cols] = vector;
-        xOffset += 0.05;
-      }
-      yOffset += 0.05;
-    }
-    zOffset += 0.001;
+    p.background(220, 50, 20, 15); // Semi-transparent background to create a trailing effect
 
+    // Update and display floating particles
     for (let particle of particles) {
-      particle.follow(flowField);
-      particle.update();
-      particle.edges();
+      particle.move();
       particle.display();
+    }
+
+    // Update and display bursts
+    for (let i = bursts.length - 1; i >= 0; i--) {
+      bursts[i].update();
+      bursts[i].display();
+      if (bursts[i].isFinished()) {
+        bursts.splice(i, 1); // Remove burst when it's finished
+      }
     }
   };
 
   class Particle {
-    constructor() {
-      this.pos = p.createVector(p.random(p.width), p.random(p.height));
-      this.vel = p.createVector(0, 0);
+    constructor(x, y) {
+      this.pos = p.createVector(x, y);
+      this.vel = p.createVector(p.random(-1, 1), p.random(-1, 1));
       this.acc = p.createVector(0, 0);
-      this.maxSpeed = 1.5;
-      this.hue = p.random(200, 260);
-      this.size = 2;
-      this.prevPos = this.pos.copy();
+      this.size = p.random(3, 6); // Small but visible particle size
+      this.hue = p.random(200, 260); // Soft pastel hues
     }
 
-    follow(vectors) {
-      let x = p.floor(this.pos.x / scale);
-      let y = p.floor(this.pos.y / scale);
-      let index = x + y * cols;
-      let force = vectors[index];
-      if (force) {
-        this.applyForce(force);
-      }
-    }
-
-    applyForce(force) {
-      this.acc.add(force);
-    }
-
-    update() {
+    move() {
+      this.acc = p5.Vector.random2D().mult(0.05); // Apply slight random acceleration for a smooth floating effect
       this.vel.add(this.acc);
-      this.vel.limit(this.maxSpeed);
+      this.vel.limit(1); // Limit speed for gentle motion
       this.pos.add(this.vel);
-      this.acc.mult(0);
-    }
 
-    edges() {
+      // Wrap edges to create continuous flow
       if (this.pos.x > p.width) this.pos.x = 0;
       if (this.pos.x < 0) this.pos.x = p.width;
       if (this.pos.y > p.height) this.pos.y = 0;
       if (this.pos.y < 0) this.pos.y = p.height;
-
-      this.prevPos = this.pos.copy();
     }
 
     display() {
-      p.stroke(this.hue, 80, 100, 50);
-      p.strokeWeight(this.size);
-      p.line(this.pos.x, this.pos.y, this.prevPos.x, this.prevPos.y);
-      this.prevPos = this.pos.copy();
+      p.fill(this.hue, 80, 100, 50); // Soft, translucent particle fill
+      p.ellipse(this.pos.x, this.pos.y, this.size);
     }
   }
+
+  // Firework burst class
+  class Burst {
+    constructor(x, y) {
+      this.pos = p.createVector(x, y);
+      this.particles = [];
+      this.lifespan = 255;
+
+      // Create particles for the burst
+      for (let i = 0; i < 50; i++) {
+        let particle = new BurstParticle(this.pos.x, this.pos.y);
+        this.particles.push(particle);
+      }
+    }
+
+    update() {
+      for (let particle of this.particles) {
+        particle.update();
+      }
+      this.lifespan -= 4; // Decrease lifespan to fade out
+    }
+
+    display() {
+      for (let particle of this.particles) {
+        particle.display();
+      }
+    }
+
+    isFinished() {
+      return this.lifespan <= 0; // Burst is finished when lifespan reaches 0
+    }
+  }
+
+  // Individual particle in the burst
+  class BurstParticle {
+    constructor(x, y) {
+      this.pos = p.createVector(x, y);
+      this.vel = p5.Vector.random2D().mult(p.random(2, 5)); // Random velocity in all directions
+      this.acc = p.createVector(0, 0);
+      this.hue = p.random(180, 260); // blue/purple
+      this.size = p.random(3, 5);
+      this.lifespan = 255;
+    }
+
+    update() {
+      this.vel.mult(0.95); // Slow down over time
+      this.pos.add(this.vel);
+      this.lifespan -= 5; // Fade out over time
+    }
+
+    display() {
+      p.fill(this.hue, 80, 100, this.lifespan);
+      p.noStroke();
+      p.ellipse(this.pos.x, this.pos.y, this.size);
+    }
+  }
+
+  // Resize canvas on window resize
+  p.windowResized = function() {
+    p.resizeCanvas(p.windowWidth < 768 ? p.windowWidth - 20 : 300, 300);
+    p.background(220, 50, 20); // Redraw background on resize
+  };
 };
 
 new p5(sketch2);
