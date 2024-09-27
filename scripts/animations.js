@@ -344,7 +344,9 @@ var sketch2 = function(p) {
 
   // Resize canvas on window resize
   p.windowResized = function() {
-    p.resizeCanvas(p.windowWidth < 768 ? p.windowWidth - 20 : 300, 300);
+    let newWidth = p.windowWidth < 768 ? p.windowWidth - 20 : 300;
+    let newHeight = p.windowWidth < 768 ? p.windowHeight / 2 : 300; // Adjust height
+    p.resizeCanvas(newWidth, newHeight);
     p.background(220, 50, 20); // Redraw background on resize
   };
 };
