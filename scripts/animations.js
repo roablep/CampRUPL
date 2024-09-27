@@ -109,6 +109,7 @@ var sketch1 = function (p) {
 
 new p5(sketch1);
 
+/*
 // Animation 2: Gentle Flowing Particles
 
 var sketch2 = function(p) {
@@ -213,6 +214,110 @@ var sketch2 = function(p) {
 };
 
 new p5(sketch2);
+*/
+
+var sketch2 = function(p) {
+  let particles = [];
+  let numParticles;
+  let flowField;
+  let cols, rows;
+  let scale = 10;
+  let zOffset = 0;
+
+  // Dynamically set particle count based on screen size
+  numParticles = p.windowWidth < 768 ? 25 : 50;  // Lower particle count for mobile
+
+  p.setup = function() {
+    let canvas = p.createCanvas(p.windowWidth < 768 ? 250 : 300, p.windowWidth < 768 ? 250 : 300);
+    canvas.parent('p5-canvas-container-2');
+    p.colorMode(p.HSB, 360, 100, 100, 100);
+    p.background(220, 50, 20); // Soft background color
+    p.noStroke();
+
+    cols = p.floor(p.width / scale);
+    rows = p.floor(p.height / scale);
+    flowField = new Array(cols * rows);
+
+    for (let i = 0; i < numParticles; i++) {
+      particles.push(new Particle());
+    }
+  };
+
+  p.draw = function() {
+    let yOffset = 0;
+    for (let y = 0; y < rows; y++) {
+      let xOffset = 0;
+      for (let x = 0; x < cols; x++) {
+        let angle = p.noise(xOffset, yOffset, zOffset) * p.TWO_PI * 2;
+        let vector = p5.Vector.fromAngle(angle);
+        vector.setMag(0.5);
+        flowField[x + y * cols] = vector;
+        xOffset += 0.05;
+      }
+      yOffset += 0.05;
+    }
+    zOffset += 0.001;
+
+    for (let particle of particles) {
+      particle.follow(flowField);
+      particle.update();
+      particle.edges();
+      particle.display();
+    }
+  };
+
+  class Particle {
+    constructor() {
+      this.pos = p.createVector(p.random(p.width), p.random(p.height));
+      this.vel = p.createVector(0, 0);
+      this.acc = p.createVector(0, 0);
+      this.maxSpeed = 1.5;
+      this.hue = p.random(200, 260);
+      this.size = 2;
+      this.prevPos = this.pos.copy();
+    }
+
+    follow(vectors) {
+      let x = p.floor(this.pos.x / scale);
+      let y = p.floor(this.pos.y / scale);
+      let index = x + y * cols;
+      let force = vectors[index];
+      if (force) {
+        this.applyForce(force);
+      }
+    }
+
+    applyForce(force) {
+      this.acc.add(force);
+    }
+
+    update() {
+      this.vel.add(this.acc);
+      this.vel.limit(this.maxSpeed);
+      this.pos.add(this.vel);
+      this.acc.mult(0);
+    }
+
+    edges() {
+      if (this.pos.x > p.width) this.pos.x = 0;
+      if (this.pos.x < 0) this.pos.x = p.width;
+      if (this.pos.y > p.height) this.pos.y = 0;
+      if (this.pos.y < 0) this.pos.y = p.height;
+
+      this.prevPos = this.pos.copy();
+    }
+
+    display() {
+      p.stroke(this.hue, 80, 100, 50);
+      p.strokeWeight(this.size);
+      p.line(this.pos.x, this.pos.y, this.prevPos.x, this.prevPos.y);
+      this.prevPos = this.pos.copy();
+    }
+  }
+};
+
+new p5(sketch2);
+
   
 // Animation 3: Pulsating Waves
 
