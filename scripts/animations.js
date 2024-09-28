@@ -265,7 +265,7 @@ var sketch2 = function(p) {
       this.acc = p.createVector(0, 0);
       this.size = p.random(3, 6); // Small but visible particle size
       this.hue = p.random(200, 260); // Soft pastel hues
-      (0, 360);
+      // this.hue = p.random(200, 260); // everything
     }
 
     move() {
